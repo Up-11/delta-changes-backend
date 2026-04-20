@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:latest
+    restart: always
+    shm_size: 128mb
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: delta_changes
+    ports:
+      - '5432:5432'
+    volumes:
+      - db_data:/var/lib/postgresql
+
+volumes:
+  db_data:

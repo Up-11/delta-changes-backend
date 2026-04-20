@@ -1,0 +1,339 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== ENUMS ====================
+
+enum MediaType {
+  IMAGE
+  VIDEO
+}
+
+enum FinishingType {
+  NONE      // Без отделки
+  ROUGH     // Предчистовая
+  CLEAN     // Чистовая
+  TURNKEY   // С ремонтом
+}
+
+enum ApplicationStatus {
+  NEW       // Новая
+  IN_PROGRESS // В работе
+  COMPLETED // Завершена
+  CANCELLED // Отменена
+}
+
+enum NewsStatus {
+  DRAFT     // Черновик
+  PUBLISHED // Опубликована
+  ARCHIVED  // Архив
+}
+
+// ==================== CORE MODELS ====================
+
+model Media {
+  id          String    @id @default(uuid())
+  url         String    // URL файла
+  type        MediaType // IMAGE или VIDEO
+  filename    String    // Имя файла
+  mimeType    String    // MIME тип
+  size        Int       // Размер в байтах
+  altText     String?   // Alt текст для доступности
+  sortOrder   Int       @default(0) @map("sort_order") // Для сортировки
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  // Связи
+  bannerId    String?   @map("banner_id")
+  banner      Banner?   @relation(fields: [bannerId], references: [id])
+
+  featureId   String?   @map("feature_id")
+  feature     FeatureItem? @relation(fields: [featureId], references: [id])
+
+  galleryId   String?   @map("gallery_id")
+  gallery     Gallery?  @relation(fields: [galleryId], references: [id])
+
+  newsId      String?   @map("news_id")
+  news        News?     @relation(fields: [newsId], references: [id])
+
+  objectBannerId String? @map("object_banner_id")
+  objectBanner   Object? @relation("ObjectBanner", fields: [objectBannerId], references: [id])
+
+  objectMasterPlanId String? @unique @map("object_master_plan_id")
+  objectMasterPlan   Object? @relation("ObjectMasterPlan", fields: [objectMasterPlanId], references: [id])
+
+  apartmentLayoutId String? @unique @map("apartment_layout_id")
+  apartmentLayout   Apartment? @relation("ApartmentLayout", fields: [apartmentLayoutId], references: [id])
+
+  apartmentFloorPlanId String? @unique @map("apartment_floor_plan_id")
+  apartmentFloorPlan   Apartment? @relation("ApartmentFloorPlan", fields: [apartmentFloorPlanId], references: [id])
+
+  apartmentMasterPlanId String? @unique @map("apartment_master_plan_id")
+  apartmentMasterPlan   Apartment? @relation("ApartmentMasterPlan", fields: [apartmentMasterPlanId], references: [id])
+
+  @@index([bannerId])
+  @@index([featureId])
+  @@index([galleryId])
+  @@index([newsId])
+  @@index([type])
+  @@map("media")
+}
+
+// ==================== BANNER ====================
+
+model Banner {
+  id          String    @id @default(uuid())
+  mainText    String    @map("main_text") // Главный текст
+  subText     String?   @map("sub_text")  // Вспомогательный текст
+  isActive    Boolean   @default(true) @map("is_active")
+  sortOrder   Int       @default(0) @map("sort_order")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  // Связи
+  media       Media[]
+
+  @@index([isActive])
+  @@index([sortOrder])
+  @@map("banners")
+}
+
+// ==================== PROJECT ====================
+
+model Project {
+  id          String    @id @default(uuid())
+  name        String    // Название проекта
+  slug        String    @unique // URL-friendly идентификатор
+  description String?   // Описание проекта
+  isActive    Boolean   @default(true) @map("is_active")
+  sortOrder   Int       @default(0) @map("sort_order")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  // Связи
+  objects     Object[]
+  apartments  Apartment[]
+
+  @@index([slug])
+  @@index([isActive])
+  @@index([sortOrder])
+  @@map("projects")
+}
+
+// ==================== OBJECT (КОМПЛЕКС/ДОМ) ====================
+
+model Object {
+  id                  String    @id @default(uuid())
+  name                String    // Название объекта
+  slug                String    @unique // URL-friendly
+
+  // Геолокация
+  latitude            Float?    // Широта
+  longitude           Float?    // Долгота
+
+  // Адрес
+  street              String?   // Улица
+  address             String?   // Полный адрес
+
+  // Характеристики
+  completionDate      DateTime? @map("completion_date") // Срок сдачи
+  floors              Int?      // Этажность
+  finishing           FinishingType? // Тип отделки
+
+  // Публикация
+  isActive            Boolean   @default(true) @map("is_active")
+  sortOrder           Int       @default(0) @map("sort_order")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  // Связи
+  projectId           String    @map("project_id")
+  project             Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  banner              Media[]   @relation("ObjectBanner") // Фото/видео баннер
+  masterPlan          Media?    @relation("ObjectMasterPlan") // Генплан
+
+  features            FeatureItem[]
+  galleries           Gallery[]
+  apartments          Apartment[]
+
+  @@index([projectId])
+  @@index([slug])
+  @@index([isActive])
+  @@index([completionDate])
+  @@index([sortOrder])
+  @@map("objects")
+}
+
+// ==================== FEATURE ITEM (ОСОБЕННОСТИ) ====================
+
+model FeatureItem {
+  id          String    @id @default(uuid())
+  title       String    // Заголовок
+  description String?   // Описание
+  sortOrder   Int       @default(0) @map("sort_order")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  // Связи
+  objectId    String    @map("object_id")
+  object      Object    @relation(fields: [objectId], references: [id], onDelete: Cascade)
+
+  media       Media[]   // Фото особенности
+
+  @@index([objectId])
+  @@index([sortOrder])
+  @@map("feature_items")
+}
+
+// ==================== GALLERY ====================
+
+model Gallery {
+  id          String    @id @default(uuid())
+  title       String?   // Заголовок галереи
+  text        String?   // Описание/текст
+  sortOrder   Int       @default(0) @map("sort_order")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  // Связи
+  objectId    String    @map("object_id")
+  object      Object    @relation(fields: [objectId], references: [id], onDelete: Cascade)
+
+  photos      Media[]   // Фото галереи
+
+  @@index([objectId])
+  @@index([sortOrder])
+  @@map("galleries")
+}
+
+// ==================== APARTMENT ====================
+
+model Apartment {
+  id              String    @id @default(uuid())
+
+  // Номер квартиры
+  number          String    // Номер квартиры (155)
+
+  // Цена и площадь
+  price           Decimal   @db.Decimal(15, 2) // Цена
+  area            Float?    // Общая площадь (м²)
+  rooms           Int?      // Количество комнат
+
+  // Расположение в здании
+  building        String?   // Дом/корпус (1)
+  entrance        String?   // Подъезд (4)
+  floor           Int       // Этаж (3)
+  floorTotal      Int       @map("floor_total") // Всего этажей в доме (16)
+
+  // Характеристики
+  completionDate  DateTime? @map("completion_date") // Срок сдачи
+  finishing       FinishingType? // Отделка
+
+  // Статус
+  isAvailable     Boolean   @default(true) @map("is_available") // В продаже
+  sortOrder       Int       @default(0) @map("sort_order")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  // Связи
+  projectId       String    @map("project_id")
+  project         Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  objectId        String    @map("object_id")
+  object          Object    @relation(fields: [objectId], references: [id], onDelete: Cascade)
+
+  layoutPhoto     Media?    @relation("ApartmentLayout") // Планировка
+  floorPlanPhoto  Media?    @relation("ApartmentFloorPlan") // План этажа
+  masterPlanPhoto Media?    @relation("ApartmentMasterPlan") // Генплан
+
+  applications    Application[]
+
+  @@index([projectId])
+  @@index([objectId])
+  @@index([isAvailable])
+  @@index([price])
+  @@index([rooms])
+  @@index([floor])
+  @@index([sortOrder])
+  @@map("apartments")
+}
+
+// ==================== APPLICATION (ЗАЯВКА) ====================
+
+model Application {
+  id          String    @id @default(uuid())
+  name        String    // Имя
+  phone       String    // Телефон
+  email       String?   // Email (дополнительно)
+  comment     String?   // Комментарий
+
+  // Статус заявки
+  status      ApplicationStatus @default(NEW)
+
+  // Источник
+  source      String?   // Откуда пришла заявка (сайт, реклама и т.д.)
+  ipAddress   String?   @map("ip_address") // IP адрес для защиты от спама
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  // Связи
+  apartmentId String?   @map("apartment_id")
+  apartment   Apartment? @relation(fields: [apartmentId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([apartmentId])
+  @@index([createdAt])
+  @@index([phone])
+  @@map("applications")
+}
+
+// ==================== NEWS ====================
+
+model News {
+  id          String    @id @default(uuid())
+  title       String    // Название/заголовок
+  slug        String    @unique // URL-friendly
+  content     String    @db.Text // Текст новости
+  excerpt     String?   // Краткое описание для превью
+  publishedAt DateTime? @map("published_at") // Дата публикации
+  status      NewsStatus @default(DRAFT)
+
+  // SEO
+  metaTitle   String?   @map("meta_title")
+  metaDesc    String?   @map("meta_description")
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  // Связи
+  media       Media[]   // Фото/видео
+
+  @@index([slug])
+  @@index([status])
+  @@index([publishedAt])
+  @@map("news")
+}
+
+// ==================== USER (АДМИН) ====================
+
+model User {
+  id          String    @id @default(uuid())
+  email       String    @unique
+  password    String?   // Хеш пароля (если нужна авторизация)
+  name        String?
+  role        String    @default("USER") // USER, ADMIN, MANAGER
+  isActive    Boolean   @default(true) @map("is_active")
+  lastLogin   DateTime? @map("last_login")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@index([email])
+  @@index([role])
+  @@map("users")
+}
