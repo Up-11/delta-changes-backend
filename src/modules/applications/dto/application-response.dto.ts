@@ -3,32 +3,35 @@ import { ApplicationStatus } from '@prisma/client';
 
 export class ApplicationResponseDto {
   @ApiProperty()
-  id: string;
+  id!: string;
 
   @ApiProperty()
-  name: string;
+  name!: string;
 
   @ApiProperty()
-  phone: string;
+  phone!: string;
 
   @ApiProperty({ nullable: true })
-  email: string | null;
+  email!: string | null;
 
   @ApiProperty({ nullable: true })
-  comment: string | null;
+  comment!: string | null;
 
   @ApiProperty({ enum: ApplicationStatus })
-  status: ApplicationStatus;
+  status!: ApplicationStatus;
 
   @ApiProperty({ nullable: true })
-  source: string | null;
+  source!: string | null;
 
   @ApiProperty({ nullable: true })
-  apartmentId: string | null;
+  apartmentId!: string | null;
+
+  @ApiProperty({ nullable: true })
+  ipAddress!: string | null;
 
   @ApiProperty()
-  createdAt: Date;
+  createdAt!: Date;
 
   @ApiProperty()
-  updatedAt: Date;
+  updatedAt!: Date;
 }

@@ -44,23 +44,8 @@ export class BannersService {
   }
 
   async create(dto: CreateBannerDto) {
-    const { mediaUrl, ...bannerData } = dto;
-
     return this.prisma.banner.create({
-      data: {
-        ...bannerData,
-        media: mediaUrl
-          ? {
-              create: {
-                url: mediaUrl,
-                type: 'IMAGE',
-                filename: mediaUrl.split('/').pop() || 'banner.jpg',
-                mimeType: 'image/jpeg',
-                size: 0,
-              },
-            }
-          : undefined,
-      },
+      data: dto,
       include: {
         media: true,
       },
@@ -70,11 +55,9 @@ export class BannersService {
   async update(id: string, dto: UpdateBannerDto) {
     await this.findOne(id);
 
-    const { mediaUrl, ...bannerData } = dto;
-
     return this.prisma.banner.update({
       where: { id },
-      data: bannerData,
+      data: dto,
       include: {
         media: true,
       },

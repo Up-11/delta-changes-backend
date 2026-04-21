@@ -11,7 +11,11 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { ApplicationsService } from './applications.service';
-import { CreateApplicationDto, UpdateApplicationDto, ApplicationResponseDto } from './dto';
+import {
+  CreateApplicationDto,
+  UpdateApplicationDto,
+  ApplicationResponseDto,
+} from './dto';
 import { AdminGuard } from '../../common/guards/admin.guard';
 
 @ApiTags('Applications')

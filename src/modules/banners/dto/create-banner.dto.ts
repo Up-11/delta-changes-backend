@@ -4,7 +4,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 export class CreateBannerDto {
   @ApiProperty({ description: 'Главный текст баннера' })
   @IsString()
-  mainText: string;
+  mainText!: string;
 
   @ApiPropertyOptional({ description: 'Вспомогательный текст' })
   @IsOptional()
@@ -21,9 +21,4 @@ export class CreateBannerDto {
   @IsInt()
   @Min(0)
   sortOrder?: number = 0;
-
-  @ApiPropertyOptional({ description: 'URL медиа файла' })
-  @IsOptional()
-  @IsString()
-  mediaUrl?: string;
 }

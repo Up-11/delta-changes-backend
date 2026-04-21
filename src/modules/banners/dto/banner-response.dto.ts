@@ -1,38 +1,39 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { MediaType } from '@prisma/client';
 
 export class BannerResponseDto {
   @ApiProperty()
-  id: string;
+  id!: string;
 
   @ApiProperty()
-  mainText: string;
+  mainText!: string;
 
   @ApiProperty({ nullable: true })
-  subText: string | null;
+  subText!: string | null;
 
   @ApiProperty()
-  isActive: boolean;
+  isActive!: boolean;
 
   @ApiProperty()
-  sortOrder: number;
+  sortOrder!: number;
 
   @ApiProperty()
-  createdAt: Date;
+  createdAt!: Date;
 
   @ApiProperty()
-  updatedAt: Date;
+  updatedAt!: Date;
 
   @ApiProperty({ type: () => [MediaDto] })
-  media: MediaDto[];
+  media!: MediaDto[];
 }
 
 export class MediaDto {
   @ApiProperty()
-  id: string;
+  id!: string;
 
   @ApiProperty()
-  url: string;
+  url!: string;
 
-  @ApiProperty()
-  type: string;
+  @ApiProperty({ enum: MediaType })
+  type!: MediaType;
 }

@@ -1,51 +1,51 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { NewsStatus } from '@prisma/client';
+import { NewsStatus, MediaType } from '@prisma/client';
 
 export class NewsResponseDto {
   @ApiProperty()
-  id: string;
+  id!: string;
 
   @ApiProperty()
-  title: string;
+  title!: string;
 
   @ApiProperty()
-  slug: string;
+  slug!: string;
 
   @ApiProperty()
-  content: string;
+  content!: string;
 
   @ApiProperty({ nullable: true })
-  excerpt: string | null;
+  excerpt!: string | null;
 
   @ApiProperty({ nullable: true })
-  publishedAt: Date | null;
+  publishedAt!: Date | null;
 
   @ApiProperty({ enum: NewsStatus })
-  status: NewsStatus;
+  status!: NewsStatus;
 
   @ApiProperty({ nullable: true })
-  metaTitle: string | null;
+  metaTitle!: string | null;
 
   @ApiProperty({ nullable: true })
-  metaDesc: string | null;
+  metaDesc!: string | null;
 
   @ApiProperty()
-  createdAt: Date;
+  createdAt!: Date;
 
   @ApiProperty()
-  updatedAt: Date;
+  updatedAt!: Date;
 
   @ApiProperty({ type: () => [MediaDto] })
-  media: MediaDto[];
+  media!: MediaDto[];
 }
 
 export class MediaDto {
   @ApiProperty()
-  id: string;
+  id!: string;
 
   @ApiProperty()
-  url: string;
+  url!: string;
 
-  @ApiProperty()
-  type: string;
+  @ApiProperty({ enum: MediaType })
+  type!: MediaType;
 }

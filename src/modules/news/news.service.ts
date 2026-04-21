@@ -66,26 +66,12 @@ export class NewsService {
   }
 
   async create(dto: CreateNewsDto) {
-    const { mediaUrl, publishedAt, ...newsData } = dto;
-
-    const slug = this.generateSlug(newsData.title);
+    const { publishedAt, ...newsData } = dto;
 
     return this.prisma.news.create({
       data: {
         ...newsData,
-        slug,
         publishedAt: publishedAt ? new Date(publishedAt) : null,
-        media: mediaUrl
-          ? {
-              create: {
-                url: mediaUrl,
-                type: 'IMAGE',
-                filename: mediaUrl.split('/').pop() || 'news.jpg',
-                mimeType: 'image/jpeg',
-                size: 0,
-              },
-            }
-          : undefined,
       },
       include: {
         media: true,
@@ -96,7 +82,7 @@ export class NewsService {
   async update(id: string, dto: UpdateNewsDto) {
     await this.findOne(id);
 
-    const { mediaUrl, publishedAt, ...newsData } = dto;
+    const { publishedAt, ...newsData } = dto;
 
     return this.prisma.news.update({
       where: { id },
@@ -119,13 +105,5 @@ export class NewsService {
         media: true,
       },
     });
-  }
-
-  private generateSlug(title: string): string {
-    return title
-      .toLowerCase()
-      .replace(/[^\w\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .substring(0, 100);
   }
 }
