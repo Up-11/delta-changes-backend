@@ -1,7 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../core';
 import { CreateNewsDto, UpdateNewsDto } from './dto';
-import { NewsStatus } from '@prisma/client';
 
 @Injectable()
 export class NewsService {
@@ -9,7 +8,6 @@ export class NewsService {
 
   async findAll() {
     return this.prisma.news.findMany({
-      where: { status: NewsStatus.PUBLISHED },
       orderBy: { publishedAt: 'desc' },
       include: {
         media: {
@@ -66,34 +64,57 @@ export class NewsService {
   }
 
   async create(dto: CreateNewsDto) {
-    const { publishedAt, ...newsData } = dto;
+    const { mediaIds, publishedAt, ...newsData } = dto;
 
-    return this.prisma.news.create({
+    const news = await this.prisma.news.create({
       data: {
         ...newsData,
         publishedAt: publishedAt ? new Date(publishedAt) : null,
       },
-      include: {
-        media: true,
-      },
     });
+
+    // Link media files to the news
+    if (mediaIds && mediaIds.length > 0) {
+      await this.prisma.media.updateMany({
+        where: { id: { in: mediaIds } },
+        data: { newsId: news.id },
+      });
+    }
+
+    return this.findOne(news.id);
   }
 
   async update(id: string, dto: UpdateNewsDto) {
     await this.findOne(id);
 
-    const { publishedAt, ...newsData } = dto;
+    const { mediaIds, publishedAt, ...newsData } = dto;
 
-    return this.prisma.news.update({
+    // Update media relations if provided
+    if (mediaIds !== undefined) {
+      // Remove existing media relations for this news
+      await this.prisma.media.updateMany({
+        where: { newsId: id },
+        data: { newsId: null },
+      });
+
+      // If new mediaIds are provided, link them
+      if (mediaIds.length > 0) {
+        await this.prisma.media.updateMany({
+          where: { id: { in: mediaIds } },
+          data: { newsId: id },
+        });
+      }
+    }
+
+    await this.prisma.news.update({
       where: { id },
       data: {
         ...newsData,
         publishedAt: publishedAt ? new Date(publishedAt) : undefined,
       },
-      include: {
-        media: true,
-      },
     });
+
+    return this.findOne(id);
   }
 
   async remove(id: string) {

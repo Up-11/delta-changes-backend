@@ -44,24 +44,51 @@ export class BannersService {
   }
 
   async create(dto: CreateBannerDto) {
-    return this.prisma.banner.create({
-      data: dto,
-      include: {
-        media: true,
-      },
+    const { mediaId, ...bannerData } = dto;
+
+    const banner = await this.prisma.banner.create({
+      data: bannerData,
     });
+
+    // If mediaId is provided, link it to the banner
+    if (mediaId) {
+      await this.prisma.media.update({
+        where: { id: mediaId },
+        data: { bannerId: banner.id },
+      });
+    }
+
+    return this.findOne(banner.id);
   }
 
   async update(id: string, dto: UpdateBannerDto) {
     await this.findOne(id);
 
-    return this.prisma.banner.update({
+    const { mediaId, ...bannerData } = dto;
+
+    // If mediaId is provided, update the media relation
+    if (mediaId !== undefined) {
+      // First, remove existing media relation for this banner
+      await this.prisma.media.updateMany({
+        where: { bannerId: id },
+        data: { bannerId: null },
+      });
+
+      // Then, if a new mediaId is provided, link it
+      if (mediaId) {
+        await this.prisma.media.update({
+          where: { id: mediaId },
+          data: { bannerId: id },
+        });
+      }
+    }
+
+    await this.prisma.banner.update({
       where: { id },
-      data: dto,
-      include: {
-        media: true,
-      },
+      data: bannerData,
     });
+
+    return this.findOne(id);
   }
 
   async remove(id: string) {

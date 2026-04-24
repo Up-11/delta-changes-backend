@@ -1,4 +1,11 @@
-import { IsString, IsOptional, IsEnum, IsDateString } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsEnum,
+  IsDateString,
+  IsArray,
+  IsUUID,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { NewsStatus } from '@prisma/client';
 
@@ -43,4 +50,10 @@ export class CreateNewsDto {
   @IsOptional()
   @IsEnum(NewsStatus)
   status?: NewsStatus = NewsStatus.DRAFT;
+
+  @ApiPropertyOptional({ description: 'ID медиа файлов' })
+  @IsOptional()
+  @IsArray()
+  @IsUUID('4', { each: true })
+  mediaIds?: string[];
 }

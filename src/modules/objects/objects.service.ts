@@ -12,7 +12,6 @@ export class ObjectsService {
 
   async findAll() {
     return this.prisma.object.findMany({
-      where: { isActive: true },
       orderBy: { sortOrder: 'asc' },
     });
   }
@@ -20,6 +19,22 @@ export class ObjectsService {
   async findOne(id: string) {
     const object = await this.prisma.object.findUnique({
       where: { id },
+      include: {
+        banner: {
+          select: {
+            id: true,
+            url: true,
+            type: true,
+          },
+        },
+        masterPlan: {
+          select: {
+            id: true,
+            url: true,
+            type: true,
+          },
+        },
+      },
     });
 
     if (!object) {
@@ -53,9 +68,28 @@ export class ObjectsService {
       );
     }
 
-    return this.prisma.object.create({
-      data: dto,
+    const { bannerId, masterPlanId, ...objectData } = dto;
+
+    const object = await this.prisma.object.create({
+      data: objectData,
     });
+
+    // Link media files to the object
+    if (bannerId) {
+      await this.prisma.media.update({
+        where: { id: bannerId },
+        data: { objectBannerId: object.id },
+      });
+    }
+
+    if (masterPlanId) {
+      await this.prisma.media.update({
+        where: { id: masterPlanId },
+        data: { objectMasterPlanId: object.id },
+      });
+    }
+
+    return this.findOne(object.id);
   }
 
   async update(id: string, dto: UpdateObjectDto) {
@@ -77,9 +111,44 @@ export class ObjectsService {
       }
     }
 
+    const { bannerId, masterPlanId, ...objectData } = dto;
+
+    // Update media relations if provided
+    if (bannerId !== undefined) {
+      await this.prisma.media
+        .updateMany({
+          where: { objectBannerId: id },
+          data: { objectBannerId: null },
+        })
+        .catch(() => {});
+
+      if (bannerId) {
+        await this.prisma.media.update({
+          where: { id: bannerId },
+          data: { objectBannerId: id },
+        });
+      }
+    }
+
+    if (masterPlanId !== undefined) {
+      await this.prisma.media
+        .updateMany({
+          where: { objectMasterPlanId: id },
+          data: { objectMasterPlanId: null },
+        })
+        .catch(() => {});
+
+      if (masterPlanId) {
+        await this.prisma.media.update({
+          where: { id: masterPlanId },
+          data: { objectMasterPlanId: id },
+        });
+      }
+    }
+
     return this.prisma.object.update({
       where: { id },
-      data: dto,
+      data: objectData,
     });
   }
 

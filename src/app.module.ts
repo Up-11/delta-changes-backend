@@ -10,6 +10,8 @@ import {
   ProjectsModule,
   ObjectsModule,
   ApartmentsModule,
+  AuthModule,
+  DashboardModule,
 } from './modules';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -28,6 +30,8 @@ import { AppService } from './app.service';
     ObjectsModule,
     ProjectsModule,
     ApartmentsModule,
+    AuthModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [AppService],

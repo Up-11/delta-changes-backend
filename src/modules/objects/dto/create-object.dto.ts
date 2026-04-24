@@ -5,6 +5,7 @@ import {
   IsInt,
   IsNumber,
   IsEnum,
+  IsUUID,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { FinishingType } from '@prisma/client';
@@ -66,4 +67,14 @@ export class CreateObjectDto {
   @IsOptional()
   @IsInt()
   sortOrder?: number;
+
+  @ApiPropertyOptional({ description: 'ID фото баннера' })
+  @IsOptional()
+  @IsUUID()
+  bannerId?: string;
+
+  @ApiPropertyOptional({ description: 'ID фото генплана' })
+  @IsOptional()
+  @IsUUID()
+  masterPlanId?: string;
 }

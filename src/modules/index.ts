@@ -6,3 +6,5 @@ export { UploadsModule } from './uploads';
 export { ProjectsModule } from './projects';
 export { ObjectsModule } from './objects';
 export { ApartmentsModule } from './apartments';
+export { AuthModule } from './auth';
+export { DashboardModule } from './dashboard';
