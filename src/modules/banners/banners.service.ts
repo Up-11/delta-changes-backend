@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../core';
 import { CreateBannerDto, UpdateBannerDto } from './dto';
+import { extractId } from '../../common/utils/extract-id.util';
 
 @Injectable()
 export class BannersService {
@@ -51,9 +52,10 @@ export class BannersService {
     });
 
     // If mediaId is provided, link it to the banner
-    if (mediaId) {
+    const extractedMediaId = extractId(mediaId);
+    if (extractedMediaId) {
       await this.prisma.media.update({
-        where: { id: mediaId },
+        where: { id: extractedMediaId },
         data: { bannerId: banner.id },
       });
     }
@@ -75,9 +77,10 @@ export class BannersService {
       });
 
       // Then, if a new mediaId is provided, link it
-      if (mediaId) {
+      const extractedMediaId = extractId(mediaId);
+      if (extractedMediaId) {
         await this.prisma.media.update({
-          where: { id: mediaId },
+          where: { id: extractedMediaId },
           data: { bannerId: id },
         });
       }

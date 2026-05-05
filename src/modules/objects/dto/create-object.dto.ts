@@ -5,7 +5,6 @@ import {
   IsInt,
   IsNumber,
   IsEnum,
-  IsUUID,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { FinishingType } from '@prisma/client';
@@ -33,11 +32,6 @@ export class CreateObjectDto {
   @IsNumber()
   longitude?: number;
 
-  @ApiPropertyOptional({ description: 'Улица' })
-  @IsOptional()
-  @IsString()
-  street?: string;
-
   @ApiPropertyOptional({ description: 'Полный адрес' })
   @IsOptional()
   @IsString()
@@ -58,6 +52,21 @@ export class CreateObjectDto {
   @IsEnum(FinishingType)
   finishing?: FinishingType;
 
+  @ApiPropertyOptional({ description: 'Заголовок концепции' })
+  @IsOptional()
+  @IsString()
+  conceptTitle?: string;
+
+  @ApiPropertyOptional({ description: 'Текст концепции' })
+  @IsOptional()
+  @IsString()
+  conceptText?: string;
+
+  @ApiPropertyOptional({ description: 'Описание объекта' })
+  @IsOptional()
+  @IsString()
+  description?: string;
+
   @ApiPropertyOptional({ description: 'Активен', default: true })
   @IsOptional()
   @IsBoolean()
@@ -70,11 +79,39 @@ export class CreateObjectDto {
 
   @ApiPropertyOptional({ description: 'ID фото баннера' })
   @IsOptional()
-  @IsUUID()
+  @IsString()
   bannerId?: string;
 
   @ApiPropertyOptional({ description: 'ID фото генплана' })
   @IsOptional()
-  @IsUUID()
+  @IsString()
   masterPlanId?: string;
+
+  @ApiPropertyOptional({
+    description: 'Массив ID медиа файлов',
+    type: [String],
+  })
+  @IsOptional()
+  @IsString({ each: true })
+  mediaIds?: string[];
+
+  @ApiPropertyOptional({
+    description: 'Особенности проекта',
+    type: [Object],
+  })
+  @IsOptional()
+  features?: { title: string; description?: string; mediaIds?: string[] }[];
+
+  @ApiPropertyOptional({
+    description: 'Галереи проекта',
+    type: [Object],
+  })
+  @IsOptional()
+  galleries?: { title?: string; mediaIds?: string[] }[];
+
+  @IsOptional()
+  infrastructure?: any[];
+
+  @IsOptional()
+  constructionProgress?: any[];
 }

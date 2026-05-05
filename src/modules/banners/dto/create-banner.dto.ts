@@ -1,11 +1,4 @@
-import {
-  IsString,
-  IsOptional,
-  IsBoolean,
-  IsInt,
-  Min,
-  IsUUID,
-} from 'class-validator';
+import { IsString, IsOptional, IsBoolean, IsInt, Min } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateBannerDto {
@@ -18,9 +11,10 @@ export class CreateBannerDto {
   @IsString()
   subText?: string;
 
-  @ApiPropertyOptional({ description: 'ID медиа файла (изображение)' })
+  @ApiPropertyOptional({
+    description: 'ID медиа файла (изображение или видео)',
+  })
   @IsOptional()
-  @IsUUID()
   mediaId?: string;
 
   @ApiPropertyOptional({ description: 'Активен ли баннер', default: true })

@@ -18,9 +18,6 @@ export class ObjectResponseDto {
   longitude!: number | null;
 
   @ApiProperty({ nullable: true })
-  street!: string | null;
-
-  @ApiProperty({ nullable: true })
   address!: string | null;
 
   @ApiProperty({ nullable: true })
@@ -31,6 +28,12 @@ export class ObjectResponseDto {
 
   @ApiProperty({ nullable: true, enum: FinishingType })
   finishing!: FinishingType | null;
+
+  @ApiProperty({ nullable: true })
+  conceptTitle!: string | null;
+
+  @ApiProperty({ nullable: true })
+  conceptText!: string | null;
 
   @ApiProperty()
   isActive!: boolean;

@@ -8,3 +8,5 @@ export { ObjectsModule } from './objects';
 export { ApartmentsModule } from './apartments';
 export { AuthModule } from './auth';
 export { DashboardModule } from './dashboard';
+export { ManagersModule } from './managers';
+export { AboutModule } from './about/about.module';

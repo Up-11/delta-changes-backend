@@ -15,6 +15,10 @@ export class CreateProjectDto {
   @IsString()
   description?: string;
 
+  @ApiPropertyOptional({ description: 'ID медиа файла (изображение)' })
+  @IsOptional()
+  mediaId?: string;
+
   @ApiPropertyOptional({ description: 'Активен', default: true })
   @IsOptional()
   @IsBoolean()

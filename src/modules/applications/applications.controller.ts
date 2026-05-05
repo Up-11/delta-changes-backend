@@ -10,6 +10,7 @@ import {
   Ip,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { ApplicationStatus } from '@prisma/client';
 import { ApplicationsService } from './applications.service';
 import {
   CreateApplicationDto,
@@ -65,5 +66,16 @@ export class ApplicationsController {
   @ApiOperation({ summary: 'Delete application (admin only)' })
   remove(@Param('id') id: string): Promise<ApplicationResponseDto> {
     return this.applicationsService.remove(id);
+  }
+
+  @Patch(':id/status')
+  @UseGuards(AdminGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update application status (admin only)' })
+  updateStatus(
+    @Param('id') id: string,
+    @Body('status') status: ApplicationStatus,
+  ): Promise<ApplicationResponseDto> {
+    return this.applicationsService.updateStatus(id, status);
   }
 }

@@ -11,7 +11,12 @@ async function bootstrap() {
   // --- НАСТРОЙКА CORS ---
   app.enableCors({
     // Указываем адрес твоего Nuxt фронтенда
-    origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
+    origin: [
+      'http://localhost:5173',
+      'http://127.0.0.1:5173',
+      '*',
+      'https://jvzp9vk6-5173.euw.devtunnels.ms',
+    ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true, // Разрешаем передачу куки и заголовков авторизации
   });

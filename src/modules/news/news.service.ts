@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../core';
 import { CreateNewsDto, UpdateNewsDto } from './dto';
+import { extractIds } from '../../common/utils/extract-id.util';
 
 @Injectable()
 export class NewsService {
@@ -74,9 +75,10 @@ export class NewsService {
     });
 
     // Link media files to the news
-    if (mediaIds && mediaIds.length > 0) {
+    const extractedMediaIds = extractIds(mediaIds);
+    if (extractedMediaIds.length > 0) {
       await this.prisma.media.updateMany({
-        where: { id: { in: mediaIds } },
+        where: { id: { in: extractedMediaIds } },
         data: { newsId: news.id },
       });
     }
@@ -91,6 +93,8 @@ export class NewsService {
 
     // Update media relations if provided
     if (mediaIds !== undefined) {
+      const extractedMediaIds = extractIds(mediaIds);
+
       // Remove existing media relations for this news
       await this.prisma.media.updateMany({
         where: { newsId: id },
@@ -98,9 +102,9 @@ export class NewsService {
       });
 
       // If new mediaIds are provided, link them
-      if (mediaIds.length > 0) {
+      if (extractedMediaIds.length > 0) {
         await this.prisma.media.updateMany({
-          where: { id: { in: mediaIds } },
+          where: { id: { in: extractedMediaIds } },
           data: { newsId: id },
         });
       }

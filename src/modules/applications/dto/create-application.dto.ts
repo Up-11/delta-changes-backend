@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsUUID, IsEnum } from 'class-validator';
+import { IsString, IsOptional, IsEnum } from 'class-validator';
 import { ApplicationStatus } from '@prisma/client';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -16,14 +16,14 @@ export class CreateApplicationDto {
   @IsString()
   email?: string;
 
-  @ApiPropertyOptional({ description: 'Комментарий' })
+  @ApiPropertyOptional({ description: 'Сообщение / Комментарий' })
   @IsOptional()
   @IsString()
-  comment?: string;
+  message?: string;
 
   @ApiPropertyOptional({ description: 'ID квартиры' })
   @IsOptional()
-  @IsUUID()
+  @IsString()
   apartmentId?: string;
 
   @ApiPropertyOptional({ description: 'Источник заявки' })

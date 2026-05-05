@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../core';
 import { CreateProjectDto, UpdateProjectDto } from './dto';
+import { extractId } from '../../common/utils/extract-id.util';
 
 @Injectable()
 export class ProjectsService {
@@ -12,14 +13,31 @@ export class ProjectsService {
 
   async findAll() {
     return this.prisma.project.findMany({
-      where: { isActive: true },
       orderBy: { sortOrder: 'asc' },
+      include: {
+        media: {
+          select: {
+            id: true,
+            url: true,
+            type: true,
+          },
+        },
+      },
     });
   }
 
   async findOne(id: string) {
     const project = await this.prisma.project.findUnique({
       where: { id },
+      include: {
+        media: {
+          select: {
+            id: true,
+            url: true,
+            type: true,
+          },
+        },
+      },
     });
 
     if (!project) {
@@ -32,6 +50,15 @@ export class ProjectsService {
   async findBySlug(slug: string) {
     const project = await this.prisma.project.findUnique({
       where: { slug },
+      include: {
+        media: {
+          select: {
+            id: true,
+            url: true,
+            type: true,
+          },
+        },
+      },
     });
 
     if (!project) {
@@ -42,44 +69,70 @@ export class ProjectsService {
   }
 
   async create(dto: CreateProjectDto) {
+    const { mediaId, ...data } = dto;
     // Check if slug already exists
     const existing = await this.prisma.project.findUnique({
-      where: { slug: dto.slug },
+      where: { slug: data.slug },
     });
 
     if (existing) {
       throw new ConflictException(
-        `Project with slug '${dto.slug}' already exists`,
+        `Project with slug '${data.slug}' already exists`,
       );
     }
 
+    const extractedMediaId = extractId(mediaId);
+
     return this.prisma.project.create({
-      data: dto,
+      data: {
+        ...data,
+        media: extractedMediaId
+          ? {
+              connect: { id: extractedMediaId },
+            }
+          : undefined,
+      },
+      include: {
+        media: true,
+      },
     });
   }
 
   async update(id: string, dto: UpdateProjectDto) {
+    const { mediaId, ...data } = dto;
     await this.findOne(id);
 
     // If slug is being updated, check uniqueness
-    if (dto.slug) {
+    if (data.slug) {
       const existing = await this.prisma.project.findFirst({
         where: {
-          slug: dto.slug,
+          slug: data.slug,
           NOT: { id },
         },
       });
 
       if (existing) {
         throw new ConflictException(
-          `Project with slug '${dto.slug}' already exists`,
+          `Project with slug '${data.slug}' already exists`,
         );
       }
     }
 
+    const extractedMediaId = extractId(mediaId);
+
     return this.prisma.project.update({
       where: { id },
-      data: dto,
+      data: {
+        ...data,
+        media: extractedMediaId
+          ? {
+              set: { id: extractedMediaId },
+            }
+          : undefined,
+      },
+      include: {
+        media: true,
+      },
     });
   }
 

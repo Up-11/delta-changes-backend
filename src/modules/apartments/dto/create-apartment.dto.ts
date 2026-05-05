@@ -5,7 +5,7 @@ import {
   IsInt,
   IsNumber,
   IsEnum,
-  IsUUID,
+  IsNotEmpty,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { FinishingType } from '@prisma/client';
@@ -13,9 +13,12 @@ import { FinishingType } from '@prisma/client';
 export class CreateApartmentDto {
   @ApiProperty({ description: 'Номер квартиры' })
   @IsString()
+  @IsNotEmpty()
   number!: string;
 
   @ApiProperty({ description: 'Цена' })
+  @IsNumber()
+  @IsNotEmpty()
   price!: number;
 
   @ApiProperty({ description: 'ID проекта' })
@@ -76,16 +79,13 @@ export class CreateApartmentDto {
 
   @ApiPropertyOptional({ description: 'ID фото планировки' })
   @IsOptional()
-  @IsUUID()
   layoutPhotoId?: string;
 
   @ApiPropertyOptional({ description: 'ID фото плана этажа' })
   @IsOptional()
-  @IsUUID()
   floorPlanPhotoId?: string;
 
   @ApiPropertyOptional({ description: 'ID фото генплана' })
   @IsOptional()
-  @IsUUID()
   masterPlanPhotoId?: string;
 }

@@ -4,7 +4,6 @@ import {
   IsEnum,
   IsDateString,
   IsArray,
-  IsUUID,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { NewsStatus } from '@prisma/client';
@@ -54,6 +53,6 @@ export class CreateNewsDto {
   @ApiPropertyOptional({ description: 'ID медиа файлов' })
   @IsOptional()
   @IsArray()
-  @IsUUID('4', { each: true })
+  @IsString({ each: true })
   mediaIds?: string[];
 }

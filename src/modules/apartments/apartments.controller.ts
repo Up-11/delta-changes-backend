@@ -6,6 +6,7 @@ import {
   Delete,
   Body,
   Param,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
@@ -14,6 +15,7 @@ import {
   CreateApartmentDto,
   UpdateApartmentDto,
   ApartmentResponseDto,
+  FilterApartmentDto,
 } from './dto';
 import { AdminGuard } from '../../common/guards/admin.guard';
 
@@ -23,9 +25,13 @@ export class ApartmentsController {
   constructor(private readonly apartmentsService: ApartmentsService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Get all available apartments (public)' })
-  findAll(): Promise<ApartmentResponseDto[]> {
-    return this.apartmentsService.findAll();
+  @ApiOperation({
+    summary: 'Get all available apartments with optional filtering (public)',
+  })
+  findAll(
+    @Query() filters?: FilterApartmentDto,
+  ): Promise<ApartmentResponseDto[]> {
+    return this.apartmentsService.findAll(filters);
   }
 
   @Get(':id')
