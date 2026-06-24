@@ -10,3 +10,4 @@ export { AuthModule } from './auth';
 export { DashboardModule } from './dashboard';
 export { ManagersModule } from './managers';
 export { AboutModule } from './about/about.module';
+export { FavoritesModule } from './favorites';

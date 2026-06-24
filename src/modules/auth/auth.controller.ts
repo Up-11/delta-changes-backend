@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
-import { LoginDto, ChangePasswordDto } from './dto';
+import { LoginDto, ChangePasswordDto, RegisterDto } from './dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
 
 @ApiTags('Auth')
@@ -16,8 +16,14 @@ import { JwtAuthGuard } from './jwt-auth.guard';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Post('register')
+  @ApiOperation({ summary: 'Register site user' })
+  register(@Body() dto: RegisterDto) {
+    return this.authService.register(dto);
+  }
+
   @Post('login')
-  @ApiOperation({ summary: 'Admin login' })
+  @ApiOperation({ summary: 'Login (email for users, username for admin)' })
   login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
   }
@@ -36,8 +42,10 @@ export class AuthController {
   @ApiOperation({ summary: 'Get current admin profile' })
   getProfile(@Request() req: any) {
     return {
-      id: req.user.sub,
+      id: req.user.id,
       username: req.user.username,
+      email: req.user.email,
+      name: req.user.name,
       role: req.user.role,
     };
   }

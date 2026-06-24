@@ -14,6 +14,8 @@ import {
   DashboardModule,
   ManagersModule,
   AboutModule,
+  FavoritesModule,
+  UsersModule,
 } from './modules';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -36,6 +38,8 @@ import { AppService } from './app.service';
     DashboardModule,
     ManagersModule,
     AboutModule,
+    FavoritesModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

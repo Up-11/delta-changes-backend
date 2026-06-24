@@ -2,11 +2,13 @@ import {
   Injectable,
   UnauthorizedException,
   BadRequestException,
+  ConflictException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
+import { UserRole } from '@prisma/client';
 import { PrismaService } from '../../core';
-import { LoginDto, ChangePasswordDto } from './dto';
+import { LoginDto, ChangePasswordDto, RegisterDto } from './dto';
 
 @Injectable()
 export class AuthService {
@@ -15,9 +17,41 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
+  async register(dto: RegisterDto) {
+    const email = dto.email.trim().toLowerCase();
+
+    const existing = await this.prisma.user.findFirst({
+      where: {
+        OR: [{ email }, { username: email }],
+      },
+    });
+
+    if (existing) {
+      throw new ConflictException('Пользователь с таким email уже существует');
+    }
+
+    const hashedPassword = await bcrypt.hash(dto.password, 10);
+
+    const user = await this.prisma.user.create({
+      data: {
+        email,
+        username: email,
+        password: hashedPassword,
+        name: dto.name.trim(),
+        role: UserRole.USER,
+      },
+    });
+
+    return this.buildAuthResponse(user);
+  }
+
   async login(dto: LoginDto) {
-    const user = await this.prisma.user.findUnique({
-      where: { username: dto.username },
+    const login = dto.username.trim().toLowerCase();
+
+    const user = await this.prisma.user.findFirst({
+      where: {
+        OR: [{ username: login }, { email: login }],
+      },
     });
 
     if (!user) {
@@ -33,12 +67,30 @@ export class AuthService {
       throw new UnauthorizedException('Неверный пароль');
     }
 
+    if (dto.client === 'site' && user.role === UserRole.ADMIN) {
+      throw new UnauthorizedException(
+        'Администратор не может входить на сайт как пользователь',
+      );
+    }
+
+   
+
     // Update last login
     await this.prisma.user.update({
       where: { id: user.id },
       data: { lastLogin: new Date() },
     });
 
+    return this.buildAuthResponse(user);
+  }
+
+  private buildAuthResponse(user: {
+    id: string;
+    username: string;
+    email: string | null;
+    name: string | null;
+    role: UserRole;
+  }) {
     const payload = {
       sub: user.id,
       username: user.username,
@@ -50,6 +102,7 @@ export class AuthService {
       user: {
         id: user.id,
         username: user.username,
+        email: user.email,
         name: user.name,
         role: user.role,
       },

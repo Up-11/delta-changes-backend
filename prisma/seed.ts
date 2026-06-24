@@ -3,6 +3,7 @@ import {
   MediaType,
   FinishingType,
   InfrastructureCategory,
+  UserRole,
 } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 import * as crypto from 'crypto';
@@ -40,7 +41,7 @@ async function main() {
         username: 'root',
         password: hashedPassword,
         name: 'Administrator',
-        role: 'ADMIN',
+        role: UserRole.ADMIN,
         isActive: true,
       },
     });

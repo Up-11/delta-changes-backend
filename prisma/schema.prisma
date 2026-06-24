@@ -38,6 +38,11 @@ enum NewsStatus {
   ARCHIVED  // Архив
 }
 
+enum UserRole {
+  ADMIN
+  USER
+}
+
 // ==================== CORE MODELS ====================
 
 model Media {
@@ -335,6 +340,7 @@ model Apartment {
   masterPlanPhoto Media?    @relation("ApartmentMasterPlan") // Генплан
 
   applications    Application[]
+  favorites       Favorite[]
 
   @@index([projectId])
   @@index([objectId])
@@ -407,18 +413,37 @@ model News {
 
 model User {
   id          String    @id @default(uuid())
-  username    String    @unique  // Логин для входа
+  username    String    @unique  // Логин для входа (для USER — email)
+  email       String?   @unique
   password    String    // Хеш пароля
   name        String?
-  role        String    @default("ADMIN") // ADMIN
+  role        UserRole  @default(USER)
   isActive    Boolean   @default(true) @map("is_active")
   lastLogin   DateTime? @map("last_login")
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
+  favorites   Favorite[]
+
   @@index([username])
+  @@index([email])
   @@index([role])
   @@map("users")
+}
+
+model Favorite {
+  id          String    @id @default(uuid())
+  userId      String    @map("user_id")
+  apartmentId String    @map("apartment_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  apartment   Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, apartmentId])
+  @@index([userId])
+  @@index([apartmentId])
+  @@map("favorites")
 }
 
 // ==================== MANAGER (ОТДЕЛ ПРОДАЖ) ====================

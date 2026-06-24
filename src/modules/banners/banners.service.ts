@@ -64,8 +64,6 @@ export class BannersService {
   }
 
   async update(id: string, dto: UpdateBannerDto) {
-    await this.findOne(id);
-
     const { mediaId, ...bannerData } = dto;
 
     // If mediaId is provided, update the media relation
