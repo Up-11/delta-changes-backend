@@ -9,25 +9,31 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // --- НАСТРОЙКА CORS ---
+  // Читаем переменную и разбиваем строку по запятой в массив
+  const origins = process.env.CORS_ORIGINS
+    ? process.env.CORS_ORIGINS.split(',')
+    : [
+        'http://localhost:5173',
+        'http://127.0.0.1:5173',
+        '*',
+        'https://jvzp9vk6-5173.euw.devtunnels.ms',
+      ];
+
   app.enableCors({
-    // Указываем адрес твоего Nuxt фронтенда
-    origin: [
-      'http://localhost:5173',
-      'http://127.0.0.1:5173',
-      '*',
-      'https://jvzp9vk6-5173.euw.devtunnels.ms',
-    ],
+    origin: origins,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    credentials: true, // Разрешаем передачу куки и заголовков авторизации
+    credentials: true,
   });
 
+  // --- ВАЛИДАЦИЯ ---
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
-      transform: true, // Полезно для автоматического преобразования типов
+      transform: true,
     }),
   );
 
+  // --- SWAGGER ---
   const config = new DocumentBuilder()
     .setTitle('Delta Changes API')
     .setDescription('API documentation for Deltaстрой')
@@ -35,14 +41,16 @@ async function bootstrap() {
     .addBearerAuth()
     .build();
 
+  // --- СТАТИКА (UPLOADS) ---
   app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
+  // --- ЗАПУСК ---
   const port = process.env.PORT ?? 4000;
   await app.listen(port);
-
   console.log(`🚀 Backend is running on: http://localhost:${port}/api`);
 }
+
 bootstrap();
