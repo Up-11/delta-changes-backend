@@ -124,6 +124,7 @@ export class ApartmentsService {
       floorPlanPhotoId,
       masterPlanPhotoId,
       price,
+      completionDate,
       ...apartmentData
     } = dto;
 
@@ -131,11 +132,17 @@ export class ApartmentsService {
       throw new Error('Price is required');
     }
 
+    // ✅ Handle completionDate - convert from ISO string to Date
+    const apartmentDataWithDate = {
+      ...apartmentData,
+      price: new Decimal(price),
+      ...(completionDate !== undefined && {
+        completionDate: completionDate ? new Date(completionDate) : null,
+      }),
+    };
+
     const apartment = await this.prisma.apartment.create({
-      data: {
-        ...apartmentData,
-        price: new Decimal(price),
-      },
+      data: apartmentDataWithDate,
     });
 
     // Link media files to the apartment
@@ -174,6 +181,7 @@ export class ApartmentsService {
       floorPlanPhotoId,
       masterPlanPhotoId,
       price,
+      completionDate,
       ...apartmentData
     } = dto;
 
@@ -229,15 +237,19 @@ export class ApartmentsService {
       }
     }
 
-    await this.prisma.apartment.update({
-      where: { id },
-      data: {
-        ...apartmentData,
-        ...(price !== undefined && { price: new Decimal(price) }),
-      },
-    });
+    // ✅ Handle completionDate - convert from ISO string to Date
+    const apartmentDataWithDate = {
+      ...apartmentData,
+      ...(price !== undefined && { price: new Decimal(price) }),
+      ...(completionDate !== undefined && {
+        completionDate: completionDate ? new Date(completionDate) : null,
+      }),
+    };
 
-    return this.findOne(id);
+    return this.prisma.apartment.update({
+      where: { id },
+      data: apartmentDataWithDate,
+    });
   }
 
   async remove(id: string) {
