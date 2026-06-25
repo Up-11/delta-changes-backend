@@ -15,6 +15,13 @@ export class ObjectsService {
     return this.prisma.object.findMany({
       orderBy: { sortOrder: 'asc' },
       include: {
+        banner: {
+          select: {
+            id: true,
+            url: true,
+            type: true,
+          },
+        },
         media: {
           where: { objectId: { not: null } },
           orderBy: { sortOrder: 'asc' },
